@@ -5,38 +5,61 @@ import { Button, DivBuscador, DivCard, DivCol, DivImagenes, DivPrecio, Img } fro
 
 
 const Main = () => {
-    const [state, setState] = useState([])
-    const [select, setSelect] = useState("Recientes")
+    const [state, setState] = useState([]);
+    const [dataSearch, setDataSearch] = useState([]);
+    const [select, setSelect] = useState("Recientes");
+    const [search, setSearch] = useState("")
+
     useEffect(() => {
 
         const dataTotal = () => {
-            if (select === "Recientes") {
+            if (select === "Recientes" ) {
                 onSnapshot(collection(db, "data"), (snapshot) => {
                     setState(snapshot.docs.map(datas => ({ ...datas.data(), id: datas.id })));
+                    setDataSearch(snapshot.docs.map(datas => ({ ...datas.data(), id: datas.id })))
                 })
             }
             else if (select === "Mayor Precio") {
                 const sortedList = [...state].sort((a, b) => (b.precio - a.precio))
                 setState(sortedList)
+                setDataSearch(sortedList)
             } else if (select === "Menor Precio") {
                 const sortedList = [...state].sort((a, b) => (a.precio - b.precio))
                 setState(sortedList)
+                setDataSearch(sortedList)
             }
         }
         dataTotal()
         // eslint-disable-next-line
     }, [select])
 
+    function Search(e) {
+        setSearch(e.target.value)
+        filtrar(e.target.value)
+    }
+
+    const filtrar = (terminoBusqueda) => {
+        // eslint-disable-next-line
+        const resultadosBusqueda = dataSearch.filter((elemento) => {
+            
+            if(elemento.nombre.toString().toLowerCase().includes(terminoBusqueda.toLowerCase())){
+                return elemento
+            }
+        })
+        setState(resultadosBusqueda)
+    } 
+    
+    
     function cambioSelect(e) {
         setSelect(e.target.value)
     }
-
+    
     return (
 
         <DivCol>
             <DivBuscador>
                 <div>
-                    <input type="text" />
+                    <input value={search} onChange={Search} type="text" placeholder="Ingrese un nombre"/>
                 </div>
                 <div>
                     <select value={select} onChange={cambioSelect}>
@@ -56,8 +79,6 @@ const Main = () => {
                         </DivPrecio>
                         <Button>COMPRAR</Button>
                     </DivCard>
-
-
                 ))
             }
             </DivImagenes>
